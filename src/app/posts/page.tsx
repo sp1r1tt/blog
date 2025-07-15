@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/card';
 import FilterBar from '../../components/FilterBar';
 
-
 interface Post {
   id: string;
   title: string;
@@ -13,13 +12,13 @@ interface Post {
 }
 
 export default async function PostsPage({ searchParams }: { searchParams: Promise<{ filter?: string }> }) {
-  const { filter = '' } = await searchParams; // Используем await для распаковки searchParams
+  const { filter = '' } = await searchParams;
   const posts = await getPosts(filter);
 
   return (
     <div className="container mx-auto px-4 py-6">
       <h1 className="text-3xl font-bold mb-6">Все посты</h1>
-      <FilterBar />
+      <FilterBar isPostPage={true} />
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
         {posts.length > 0 ? (
           posts.map((post: Post) => (
