@@ -1,22 +1,19 @@
-// src/components/ThemeToggle.tsx
-'use client'; // Ensure this is a client component
+'use client'; 
 
 import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
 import { Sun, Moon } from 'lucide-react';
-import { Button } from './ui/button'; // Adjust import based on your setup
+import { Button } from './ui/button'; 
 
 export default function ThemeToggle() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
-  // Ensure component only renders after mounting on client
   useEffect(() => {
     setMounted(true);
   }, []);
 
   if (!mounted) {
-    // Render a fallback during SSR (e.g., nothing or a placeholder)
     return <Button variant="ghost" size="icon" className="text-white hover:bg-gray-800/50" />;
   }
 

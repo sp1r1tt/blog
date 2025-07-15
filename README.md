@@ -45,64 +45,53 @@ The application leverages **Next.js** for server-side rendering and client-side 
 
 ## Technologies Used
 - **Frontend**:
-  - **Next.js**: React framework for server-side rendering and routing.
-  - **React**: For building interactive UI components.
-  - **TypeScript**: For type-safe JavaScript development.
-  - **Tailwind CSS**: Utility-first CSS framework for styling.
-  - **Framer Motion**: For animations on post cards.
-  - **next-themes**: For light/dark theme switching.
-  - **React Hook Form**: For form handling and validation.
-  - **Zod**: For schema validation of forms.
-  - **Lucide React**: For icons (e.g., Sun, Moon, Plus).
+  - **Next.js**
+  - **React**
+  - **TypeScript**
+  - **Tailwind CSS**
+  - **Framer Motion**
+  - **next-themes**
+  - **React Hook Form**
+  - **Zod**
+  - **Lucide React**
 - **State Management**:
-  - **Redux Toolkit**: For managing filter states.
-  - **RTK Query**: For data fetching and caching from Firestore.
+  - **Redux Toolkit**
+  - **RTK Query**
 - **Backend**:
-  - **Firebase Firestore**: NoSQL database for storing posts and comments.
+  - **Firebase Firestore**
 - **Utilities**:
-  - **class-variance-authority (CVA)**: For variant-based component styling.
-  - **clsx** and **tailwind-merge**: For conditional class name handling.
+  - **class-variance-authority**
+  - **clsx**
+  - **tailwind-merge**
 - **Environment**:
-  - **Firebase Configuration**: Environment variables for Firestore integration.
+  - **Firebase Configuration**
 
 ## Project Structure
 ```
 blog-app/
 ├── src/
-│   ├── app/                      # Next.js app directory
-│   │   ├── create/               # Page for creating posts
-│   │   │   └── page.tsx
-│   │   ├── posts/                # Posts listing and detail pages
-│   │   │   ├── [id]/             # Dynamic route for post details
-│   │   │   │   └── page.tsx
-│   │   │   └── page.tsx
-│   │   ├── layout.tsx            # Root layout for the app
-│   │   ├── page.tsx              # Home page
-│   │   ├── providers.tsx         # Redux provider setup
-│   │   └── globals.css           # Global styles with Tailwind
-│   ├── components/               # Reusable React components
-│   │   ├── ui/                   # UI components (Button, Card)
-│   │   │   ├── button.tsx
-│   │   │   └── card.tsx
-│   │   ├── FilterBar.tsx         # Component for filtering posts/comments
-│   │   ├── PostForm.tsx          # Form for creating posts
-│   │   ├── PostList.tsx          # Component for listing posts
-│   │   └── ThemeToggle.tsx       # Theme switcher component
-│   ├── lib/                      # Utility functions
-│   │   └── utils.ts              # Classname merging utilities
-│   ├── schemas/                  # Zod schemas for validation
-│   │   └── postSchema.ts
-│   ├── services/                 # Firebase/Firestore service functions
-│   │   └── firestore.ts
-│   ├── store/                    # Redux store setup
-│   │   ├── commentsSlice.ts      # Redux slice for comment filters
-│   │   ├── postsSlice.ts         # Redux slice for post filters and RTK Query
-│   │   └── index.ts              # Store configuration
-├── .env                    # Environment variables for Firebase
-├── next.config.js                # Next.js configuration
-├── tsconfig.json                 # TypeScript configuration
-├── package.json                  # Project dependencies
-└── README.md                     # This file
+│   ├── app/
+│   │   ├── create/
+│   │   ├── posts/
+│   │   ├── layout.tsx
+│   │   ├── page.tsx
+│   │   ├── providers.tsx
+│   │   └── globals.css
+│   ├── components/
+│   │   ├── ui/
+│   │   ├── FilterBar.tsx
+│   │   ├── PostForm.tsx
+│   │   ├── PostList.tsx
+│   │   └── ThemeToggle.tsx
+│   ├── lib/
+│   ├── schemas/
+│   ├── services/
+│   ├── store/
+├── .env
+├── next.config.js
+├── tsconfig.json
+├── package.json
+└── README.md
 ```
 
 ## How It Works
@@ -139,7 +128,7 @@ blog-app/
   - CRUD operations are abstracted in `firestore.ts`.
   - RTK Query (`postsApi`) integrates Firestore operations with the frontend, providing caching and optimistic updates.
 - **Environment Variables**:
-  - Firebase configuration is stored in `.env.local` for secure API key management.
+  - Firebase configuration is stored in `.env` for secure API key management.
 
 ### User Flow
 1. **Home Page (`/`)**: Displays a welcome message, a filter bar, and a list of posts.
@@ -155,22 +144,22 @@ blog-app/
 - **Firebase Account**: Create a Firestore database and obtain configuration details.
 
 ### Steps
-1. **Clone the Repository**:
+
+1. **Clone the Repository**
    ```bash
    git clone <repository-url>
    cd blog-app
    ```
 
-2. **Install Dependencies**:
+2. **Install Dependencies**
    ```bash
    npm install
    # or
    yarn install
    ```
 
-3. **Set Up Environment Variables**:
-   - Create a `.env.local` file in the root directory.
-   - Add your Firebase configuration (replace with your own values):
+3. **Set Up Environment Variables**
+   - Create `.env.local` in the root directory:
      ```env
      NEXT_PUBLIC_FIREBASE_API_KEY=your-api-key
      NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-auth-domain
@@ -181,21 +170,53 @@ blog-app/
      NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your-measurement-id
      ```
 
-4. **Run the Development Server**:
+4. **Run the Development Server**
    ```bash
    npm run dev
    # or
    yarn dev
    ```
-   The app will be available at `http://localhost:3000`.
 
-5. **Build for Production**:
+5. **Create Firebase Firestore Database**
+
+- Go to the [Firebase](https://console.firebase.google.com/) console
+- Select or create a project.
+- Go to **Firestore Database** > **Create database**:
+- Select **Test Mode** (for development)
+- Select a region (e.g. europe-west)
+- Click **Start collection**:
+- Name the collection: `posts`
+- Create the first document:
+- `title`: "First post"
+- `content`: "This is the content of the post"
+- `author`: "Alex"
+- `createdAt`: current date (can be done manually or via code)
+- Similarly, create the `comments` collection, if needed.
+- **Rules** tab → configure security rules:
+
+**Rules tab → configure security rules::**
+```js
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /posts/{postId} {
+      allow read: if true;
+      allow write: if true; // Allow unauthenticated creates, updates, and deletes
+    }
+    match /comments/{commentId} {
+      allow read: if true;
+      allow write: if true; // Allow unauthenticated creates and deletes
+    }
+  }
+}
+``` 
+Click **Publish**.
+
+6. **Build for Production**
    ```bash
-   npm run build
-   npm run start
+   npm run build && npm run start
    # or
-   yarn build
-   yarn start
+   yarn build && yarn start
    ```
 
 ## Usage

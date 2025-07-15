@@ -1,53 +1,81 @@
-import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, getDoc, query, where } from 'firebase/firestore';
+import { db } from '../services/firebase';
+import { collection, getDocs, getDoc, doc, addDoc, updateDoc, deleteDoc, query, where } from 'firebase/firestore';
 
-const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
-};
+interface Post {
+  id: string;
+  title: string;
+  content: string;
+  author: string;
+  createdAt: string;
+}
 
-const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app);
+interface Comment {
+  id: string;
+  text: string;
+  author: string;
+  createdAt: string;
+  postId: string;
+}
 
-export const createPost = async (post: { title: string; content: string; author: string; createdAt: string }) => {
-  const docRef = await addDoc(collection(db, 'posts'), post);
-  return { id: docRef.id };
-};
-
-export const getPosts = async () => {
+export const getPosts = async (filter: string = '') => {
   const querySnapshot = await getDocs(collection(db, 'posts'));
-  return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as any }));
+  let posts: Post[] = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Post));
+  if (filter) {
+    posts = posts.filter(post => post.title.toLowerCase().includes(filter.toLowerCase()));
+  }
+  return posts;
 };
 
-export const updatePost = async (id: string, post: { title: string; content: string; author: string }) => {
+export const getCommentsByPostId = async (postId: string, filter: string = '') => {
+  const q = query(collection(db, 'comments'), where('postId', '==', postId));
+  const querySnapshot = await getDocs(q);
+  let comments: Comment[] = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Comment));
+  if (filter) {
+    comments = comments.filter(comment =>
+      comment.text.toLowerCase().includes(filter.toLowerCase()) ||
+      comment.author.toLowerCase().includes(filter.toLowerCase())
+    );
+  }
+  return comments;
+};
+
+export const getPost = async (id: string) => {
+  const postDoc = await getDoc(doc(db, 'posts', id));
+  if (!postDoc.exists()) {
+    return null;
+  }
+  return { id: postDoc.id, ...postDoc.data() } as Post;
+};
+
+export const createPost = async (post: Omit<Post, 'id' | 'createdAt'>) => {
+  const newPost = {
+    ...post,
+    createdAt: new Date().toISOString(),
+  };
+  const docRef = await addDoc(collection(db, 'posts'), newPost);
+  return { id: docRef.id, ...newPost };
+};
+
+export const updatePost = async (id: string, post: Omit<Post, 'id' | 'createdAt'>) => {
   const postRef = doc(db, 'posts', id);
-  await updateDoc(postRef, post);
+  await updateDoc(postRef, { ...post });
 };
 
 export const deletePost = async (id: string) => {
-  const postRef = doc(db, 'posts', id);
-  await deleteDoc(postRef);
+  await deleteDoc(doc(db, 'posts', id));
 };
 
-export const createComment = async (postId: string, comment: { text: string; author: string; createdAt: string }) => {
-  const docRef = await addDoc(collection(db, 'comments'), { ...comment, postId });
-  return { id: docRef.id };
-};
-
-export const getCommentsByPostId = async (postId: string) => {
-  const q = query(collection(db, 'comments'), where('postId', '==', postId));
-  const querySnapshot = await getDocs(q);
-  return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as any }));
+export const createComment = async (comment: Omit<Comment, 'id' | 'createdAt'>) => {
+  const newComment = {
+    ...comment,
+    createdAt: new Date().toISOString(),
+  };
+  const docRef = await addDoc(collection(db, 'comments'), newComment);
+  return { id: docRef.id, ...newComment };
 };
 
 export const deleteComment = async (commentId: string) => {
-  const commentRef = doc(db, 'comments', commentId);
-  await deleteDoc(commentRef);
+  await deleteDoc(doc(db, 'comments', commentId));
 };
 
-export { getDoc, doc };
+export { getDoc, doc, db, type Comment };

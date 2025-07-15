@@ -8,10 +8,10 @@ import {
   getDoc,
   doc,
   createComment,
-  getCommentsByPostId
+  getCommentsByPostId,
+  deleteComment,
 } from '../services/firestore';
 import { db } from '../services/firestore';
-import { deleteDoc } from 'firebase/firestore';
 
 interface Post {
   id: string;
@@ -22,7 +22,7 @@ interface Post {
 }
 
 interface Comment {
-  id?: string;
+  id: string; 
   text: string;
   author: string;
   createdAt: string;
@@ -55,26 +55,25 @@ export const postsApi = createApi({
       providesTags: ['Posts'],
     }),
 
-   getPost: builder.query<Post | null, string>({
-  queryFn: async (id: string) => {
-    try {
-      const postDoc = await getDoc(doc(db, 'posts', id));
-      if (postDoc.exists()) {
-        return { data: { id: postDoc.id, ...postDoc.data() } as Post };
-      }
-      return { data: null }; // 🔧 ← ключевое изменение
-    } catch (error) {
-      return {
-        error: {
-          status: 'FETCH_ERROR',
-          error: error instanceof Error ? error.message : 'Неизвестная ошибка',
-        } as FetchBaseQueryError,
-      };
-    }
-  },
-  providesTags: (result, error, id) => [{ type: 'Posts', id }],
-}),
-
+    getPost: builder.query<Post | null, string>({
+      queryFn: async (id: string) => {
+        try {
+          const postDoc = await getDoc(doc(db, 'posts', id));
+          if (postDoc.exists()) {
+            return { data: { id: postDoc.id, ...postDoc.data() } as Post };
+          }
+          return { data: null };
+        } catch (error) {
+          return {
+            error: {
+              status: 'FETCH_ERROR',
+              error: error instanceof Error ? error.message : 'Неизвестная ошибка',
+            } as FetchBaseQueryError,
+          };
+        }
+      },
+      providesTags: (result, error, id) => [{ type: 'Posts', id }],
+    }),
 
     getComments: builder.query<Comment[], string>({
       queryFn: async (postId: string) => {
@@ -96,7 +95,7 @@ export const postsApi = createApi({
     createPost: builder.mutation<string, Omit<Post, 'id' | 'createdAt'>>({
       queryFn: async (post) => {
         try {
-          const result = await createPost({ ...post, createdAt: new Date().toISOString() });
+          const result = await createPost(post);
           return { data: result.id };
         } catch (error) {
           return {
@@ -111,28 +110,27 @@ export const postsApi = createApi({
     }),
 
     updatePost: builder.mutation<void, { id: string; post: Omit<Post, 'id' | 'createdAt'> }>({
-  queryFn: async ({ id, post }) => {
-    try {
-      await updatePost(id, post);
-      return { data: undefined }; // ✅ valid return for void
-    } catch (error) {
-      return {
-        error: {
-          status: 'FETCH_ERROR',
-          error: error instanceof Error ? error.message : 'Неизвестная ошибка',
-        } as FetchBaseQueryError,
-      };
-    }
-  },
-  invalidatesTags: (result, error, { id }) => [{ type: 'Posts', id }],
-}),
-
+      queryFn: async ({ id, post }) => {
+        try {
+          await updatePost(id, post);
+          return { data: undefined };
+        } catch (error) {
+          return {
+            error: {
+              status: 'FETCH_ERROR',
+              error: error instanceof Error ? error.message : 'Неизвестная ошибка',
+            } as FetchBaseQueryError,
+          };
+        }
+      },
+      invalidatesTags: (result, error, { id }) => [{ type: 'Posts', id }],
+    }),
 
     deletePost: builder.mutation<{ success: boolean }, string>({
       queryFn: async (id) => {
         try {
           await deletePost(id);
-          return { data: { success: true } }; // ✅ исправлено
+          return { data: { success: true } };
         } catch (error) {
           return {
             error: {
@@ -145,13 +143,10 @@ export const postsApi = createApi({
       invalidatesTags: ['Posts'],
     }),
 
-    createComment: builder.mutation<string, { postId: string; comment: { text: string; author: string } }>({
+    createComment: builder.mutation<string, { postId: string; comment: Omit<Comment, 'id' | 'createdAt' | 'postId'> }>({
       queryFn: async ({ postId, comment }) => {
         try {
-          const result = await createComment(postId, {
-            ...comment,
-            createdAt: new Date().toISOString(),
-          });
+          const result = await createComment({ ...comment, postId });
           return { data: result.id };
         } catch (error) {
           return {
@@ -171,8 +166,7 @@ export const postsApi = createApi({
           if (!commentId) {
             throw new Error('Comment ID is undefined or invalid');
           }
-          const commentRef = doc(db, 'comments', commentId);
-          await deleteDoc(commentRef);
+          await deleteComment(commentId);
           return { data: { success: true } };
         } catch (error) {
           return {
@@ -206,8 +200,11 @@ const postsSlice = createSlice({
     setFilter: (state, action: PayloadAction<string>) => {
       state.filter = action.payload;
     },
+    clearFilter: (state) => {
+      state.filter = '';
+    },
   },
 });
 
-export const { setFilter } = postsSlice.actions;
+export const { setFilter, clearFilter } = postsSlice.actions;
 export default postsSlice.reducer;
