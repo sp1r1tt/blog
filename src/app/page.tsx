@@ -30,7 +30,7 @@ export default function Home() {
 </Button>
         </div>
       </header>
-      <FilterBar />
+      <FilterBar isPostPage={false} />
       <PostList />
     </div>
   );
