@@ -5,7 +5,6 @@ import { notFound } from 'next/navigation';
 import FilterBar from '../../../components/FilterBar';
 import PostCommentForm from '../../../components/PostCommentForm';
 
-
 interface Post {
   id: string;
   title: string;
@@ -53,7 +52,7 @@ export default async function PostDetail({
     notFound();
   }
   const post = { id: postDoc.id, ...postDoc.data() } as Post;
-  
+
   const comments = await getCommentsByPostId(id, commentFilter);
 
   return (
@@ -74,7 +73,7 @@ export default async function PostDetail({
         Назад к постам
       </Link>
       <h2 className="text-2xl font-semibold mt-6 mb-2">Комментарии</h2>
-      <FilterBar />
+      <FilterBar isPostPage={false} />
       <PostCommentForm postId={id} comments={comments} />
     </div>
   );
