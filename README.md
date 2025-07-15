@@ -1,6 +1,6 @@
 # Blog Application
 
-![Скриншот]([./screenshot.png](https://github.com/sp1r1tt/blog/blob/d2f535f13c70dbf34e922fd62c6cfebed2329312/screenshot.png))
+![Скриншот](https://github.com/sp1r1tt/blog/blob/d2f535f13c70dbf34e922fd62c6cfebed2329312/screenshot.png)
 
 A simple and modern blog platform built with **Next.js** and **Firebase Firestore**, allowing users to create, view, comment on, and delete posts. The application features a responsive design, theme switching (light/dark mode), client-side filtering for posts and comments, and server-side rendering (SSR) for improved SEO and fast initial page loads.
 
