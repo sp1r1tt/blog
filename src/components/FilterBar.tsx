@@ -9,7 +9,7 @@ import { RootState } from '../store';
 
 interface FilterBarProps {
   isPostPage: boolean;
-  postId?: string; // Optional, only needed for post detail page
+  postId?: string; 
 }
 
 export default function FilterBar({ isPostPage, postId }: FilterBarProps) {
